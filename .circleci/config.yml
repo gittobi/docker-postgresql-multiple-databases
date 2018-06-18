@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/tobi_postgres
+    docker:
+      - image: docker:17.09-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - deploy:
+          name: Push Docker image
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              TAG=0.1.${CIRCLE_SHA1}
+              docker build -t tobicom/postgres:$TAG -t tobicom/postgres:latest .
+              docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+              docker push tobicom/postgres:$TAG
+              docker push tobicom/postgres:latest
+            fi
